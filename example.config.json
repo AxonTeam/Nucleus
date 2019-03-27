@@ -1,0 +1,5 @@
+{
+    "token": "YourTokenHere",
+    "owners": ["Array", "of", "owner", "ids"],
+    "hasRoot": ["Array", "of", "root", "user", "ids"]
+}
