@@ -6,11 +6,11 @@ const config = require('../config.json');
 const bot = new Eris.CommandClient(config.token, { 
     restMode: true,
     autoreconnect: true,
-  }, {
-    prefix: config.perfix || 'nuke ',
+}, {
+    prefix: config.prefix || 'nuke ',
     defaultHelpCommand: false,
     defaultCommandOptions: {
-      guildOnly: true
+        guildOnly: true,
     }
 })
 

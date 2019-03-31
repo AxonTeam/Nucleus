@@ -8,9 +8,15 @@ const purge = require('../functions/purgeDB');
 const UserModel = require('../../models/user');
 
 async function genCommand(channel, msg, noembed) {
-    const user = await UserModel.findOne({ ID: msg.author.id }).exec();
+    const user = await UserModel.findOne( { ID: msg.author.id } ).exec();
     if (user) {
-        await purge(channel, msg, true);
+        try {
+            await purge(msg.channel, msg, true);
+        } catch (err) {
+            if (err === 'Manage DB - PurgeDB - User not found!') {
+                return;
+            }
+        }
     }
     const tokn = await token(msg.author.id);
     return await sendToken(channel, msg, noembed, tokn);
@@ -35,7 +41,6 @@ async function sendToken(channel, msg, noembed, tokn) {
     if (noembed !== false) {
         mess = `${tokn}`;
     }
-    console.log(mess);
     sendMessage(channel, mess);
 }
 
@@ -45,34 +50,39 @@ async function purgeCommand(msg, args) {
             return sendMessage(msg.channel, 'Invalid ID!');
         }
         const mess = await sendMessage(msg.channel, 'Checking authentication...');
-        let has = hasRoot(msg.author.id);
+        const has = hasRoot(msg.author.id);
         if (has !== true) {
             return mess.edit('Unauthorized!');
-        } else {
-            mess.edit('Authorized!'); /* 'Manage DB - PurgeDB - User not found!' */
-            let p;
-            try {
-                p = await purge(msg.channel, msg, true, args[1]);
-            } catch (err) {
-                if (err.message === 'Manage DB - PurgeDB - User not found!' || err === 'Manage DB - PurgeDB - User not found!') {
-                    return sendMessage(msg.channel, 'User not found in database! Cannot purge!');
-                }
-            }
-            const message = (p === true ? `Purged the database of ID ${args[1]}` : 'Unable to purge the database!');
-            return mess.edit(message);
         }
+        mess.edit('Authorized!'); /* 'Manage DB - PurgeDB - User not found!' */
+        let p;
+        try {
+            p = await purge(msg.channel, msg, true, args[1]);
+        } catch (err) {
+            if (err.message === 'Manage DB - PurgeDB - User not found!' || err === 'Manage DB - PurgeDB - User not found!') {
+                return sendMessage(msg.channel, 'User not found in database! Cannot purge!');
+            }
+        }
+        const message = (p === true ? `Purged the database of ID ${args[1]}` : 'Unable to purge the database!');
+        return await mess.edit(message);
     }
 }
 
 module.exports = bot => ({
     label: 'token',
-    execute: async (msg, args) => {
+    execute: async(msg, args) => {
         let noembed = false;
         const auth = await authorize(msg, msg.author.id, true);
         if (auth === false) {
-            const user = await UserModel.findOne({ ID: msg.author.id }).exec();
+            const user = await UserModel.findOne( { ID: msg.author.id } ).exec();
             if (user) {
-                purge(msg.channel, msg, true);
+                try {
+                    await purge(msg.channel, msg, true);
+                } catch (err) {
+                    if (err === 'Manage DB - PurgeDB - User not found!') {
+                        return;
+                    }
+                }
             }
             return null;
         }
@@ -84,14 +94,14 @@ module.exports = bot => ({
             return await purgeCommand(msg, args);
         }
         const channel = await bot.getDMChannel(msg.author.id);
-        return genCommand(channel, msg, noembed);
+        return await genCommand(channel, msg, noembed);
     },
     options: {
         flags: [
-          {
-            flag: 'no-embed',
-            description: 'Sends your token to you without the embed'
-          }
+            {
+                flag: 'no-embed',
+                description: 'Sends your token to you without the embed'
+            }
         ],
         subcommands: [
             {
@@ -103,4 +113,4 @@ module.exports = bot => ({
         limitedto: 'AxonTeam members only',
         usage: 'token (flag)',
     }
-})
+});
