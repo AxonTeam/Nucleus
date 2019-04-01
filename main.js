@@ -1,5 +1,5 @@
-const mongoose = require('mongoose'),
-    fs = require('fs');
+const mongoose = require('mongoose')
+const fs = require('fs');
 
 const bot = require('./bot/bot');
 const config = require('./config.json');
@@ -7,13 +7,13 @@ const config = require('./config.json');
 mongoose.connect('mongodb://localhost/AxonTeam', {
     useCreateIndex: true,
     autoReconnect: true,
-    useNewUrlParser: true
+    useNewUrlParser: true,
 });
 
 const db = mongoose.connection;
 
-db.once('connect', () => console.log('Connected to AxonTeam database!'));
-db.on('error', () => console.error.bind(console, 'Connection error:'));
+db.once('connect', () => console.log('Connected to AxonTeam database!') );
+db.on('error', () => console.error.bind(console, 'Connection error:') );
 
 function initCommand(command) {
     if (bot.commands[command.label]) {
@@ -31,26 +31,26 @@ function initCommand(command) {
 }
 
 function initCommands() {
-  const cmds = './bot/commands/'
-  const commands = fs.readdirSync(cmds);
-  for (let command of commands) {
-      command = require(`./bot/commands/${command}`)(bot);
-      initCommand(command);
-  }
-  console.log('BOT - Initated commands!');
+    const cmds = './bot/commands/';
+    const commands = fs.readdirSync(cmds);
+    for (let command of commands) {
+        command = require(`./bot/commands/${command}`)(bot);
+        initCommand(command);
+    }
+    console.log('BOT - Initated commands!');
 }
 
 initCommands();
 
-const prefix = config.prefix || 'nuke ',
-    status = config.status || 'AxonTeam Manager';
+const prefix = config.prefix || 'nuke ';
+const status = config.status || 'AxonTeam Manager';
 
 bot.on('ready', () => {
     console.log('READY');
     bot.editStatus('online', {
-        name: `${prefix}help | ${status}`
+        name: `${prefix}help | ${status}`,
     });
     console.log('SET - STATUS');
-});
+} );
 
 bot.connect();

@@ -12,11 +12,11 @@ async function sendHandledMess(channel, content) {
         const endNum = err.message.match(iNum); // Internal server error id
         if (err.message === `Discord${type}Error: ${endNum} INTERNAL SERVER ERROR on POST /api/v7/channels/${channel.id}/messages`) {
             throw Error('sendMessage - Discord - Internal discord error when sending emoji');
-        } else if (err.message.startsWith('Request timed out') && err.message.match(/messages/)) {
+        } else if (err.message.startsWith('Request timed out') && err.message.match(/messages/) ) {
             throw Error('sendMessage - Discord - Request timed out!');
         } else if (err.message === `Discord${type}Error [10003]: Unknown Channel`) {
             throw Error('sendMessage - Discord - Invalid channel (Non exist)');
-        } else if (err.message.startsWith(`Discord${type}Error [50035]:`) && err.message.match(`channel_id: Value "${channel.id}" is not snowflake.`)) {
+        } else if (err.message.startsWith(`Discord${type}Error [50035]:`) && err.message.match(`channel_id: Value "${channel.id}" is not snowflake.`) ) {
             throw Error('sendMessage - Discord - Channel id is not snowflake!');
         } else {
             throw err;
@@ -38,11 +38,11 @@ async function dmSend(channel, content) {
                 const endNum = err.message.match(iNum); // Internal server error id
                 if (err.message === `Discord${type}Error: ${endNum} INTERNAL SERVER ERROR on POST /api/v7/channels/${channel.id}/messages`) {
                     throw Error('sendMessage - Discord - Internal discord error when sending emoji');
-                } else if (err.message.startsWith('Request timed out') && err.message.match(/messages/)) {
+                } else if (err.message.startsWith('Request timed out') && err.message.match(/messages/) ) {
                     throw Error('sendMessage - Discord - Request timed out!');
                 } else if (err.message === `Discord${type}Error [10003]: Unknown Channel`) {
                     throw Error('sendMessage - Discord - Invalid channel (Non exist)');
-                } else if (err.message.startsWith(`Discord${type}Error [50035]:`) && err.message.match(`channel_id: Value "${channel.id}" is not snowflake.`)) {
+                } else if (err.message.startsWith(`Discord${type}Error [50035]:`) && err.message.match(`channel_id: Value "${channel.id}" is not snowflake.`) ) {
                     throw Error('sendMessage - Discord - Channel id is not snowflake!');
                 } else {
                     throw err;
@@ -80,9 +80,8 @@ async function sendMessage(channel, content) {
             throw Error('sendMessage - Permissions - No permissions to send message!');
         }
         return await sendHandledMess(channel, content);
-    } else {
-        throw Error('sendMessage - Not allowed - Messages only allowed to be sent in guilds and DMs!');
     }
+    throw Error('sendMessage - Not allowed - Messages only allowed to be sent in guilds and DMs!');
 }
 
 module.exports = sendMessage;

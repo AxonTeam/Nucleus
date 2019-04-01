@@ -1,13 +1,15 @@
+const Emitter = require('events');
+
 const sendMessage = require('./sendMessage');
 const bot = require('../bot');
 const util = require('util');
-const sleep = util.promisify(setTimeout)
+const sleep = util.promisify(setTimeout);
+const sender = new Emitter();
 
-async function del(mess) {
+sender.on('ended', async(msg) => {
     await sleep(5000);
-    mess.delete();
-}
-
+    msg.delete();
+});
 
 /**
  * Checks if a user is authorized (in Axon internal guild).
@@ -22,8 +24,7 @@ async function botAuthorize(msg, id, sendMess) {
     if (!sendMess) {
         sendMess = false;
     }
-    let mess;
-    let message;
+    let [mess, message];
     if (sendMess !== false) {
         mess = await sendMessage(msg.channel, 'Authorizing...');
         if (!mess) {
@@ -55,7 +56,7 @@ async function botAuthorize(msg, id, sendMess) {
     }
     if (sendMess !== false) {
         mess.edit('Authorized!');
-        del(mess);
+        sender.emit('ended', (mess));
     }
     return true;
 }

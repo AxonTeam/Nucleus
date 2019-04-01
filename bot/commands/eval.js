@@ -1,13 +1,13 @@
 const util = require('util');
 
-const inspect = util.inspect;
+const {inspect} = util;
 
 const sendMessage = require('../functions/sendMessage');
 const config = require('../../config');
 const User = require('../../models/user');
 const Image = require('../../models/image');
 
-module.exports = bot => ({
+module.exports = bot => {return {
     label: 'eval',
     execute: async (msg, args) => {
         if (!config || !config.owners || !config.owners.includes(msg.author.id)) {
@@ -36,7 +36,7 @@ module.exports = bot => ({
         const fullLen = evaled.length;
 
         if (fullLen === 0) {
-            return;
+            return null;
         }
 
         if (fullLen > 2000) {
@@ -47,18 +47,17 @@ module.exports = bot => ({
                 sendMessage(msg.channel, `\`\`\`js\n${evaled[1]}\`\`\``);
                 sendMessage(msg.channel, `\`\`\`js\n${evaled[2]}\`\`\``);
                 return;
-            } else {
-                return evaled.forEach((message) => {
-                    sendMessage(msg.channel, `\`\`\`js\n${message}\`\`\``);
-                    return;
-                });
             }
+            return evaled.forEach((message) => {
+                sendMessage(msg.channel, `\`\`\`js\n${message}\`\`\``);
+                return;
+            });
         }
         return sendMessage(msg.channel, `\`\`\`js\n${evaled}\`\`\``);
     },
     options: {
         description: 'Eval JavaScript',
         usage: 'eval [code]',
-        limitedto: 'Null'
+        limitedto: 'Null',
     }
-})
+}};

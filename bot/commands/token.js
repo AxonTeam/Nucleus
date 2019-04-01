@@ -66,6 +66,7 @@ async function purgeCommand(msg, args) {
         const message = (p === true ? `Purged the database of ID ${args[1]}` : 'Unable to purge the database!');
         return await mess.edit(message);
     }
+    return null;
 }
 
 module.exports = bot => ({

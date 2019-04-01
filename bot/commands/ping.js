@@ -15,7 +15,7 @@ module.exports = () => ({
         const date = new Date();
         const mess = await sendMessage(msg.channel, 'Pong!');
         if (!mess) {
-            return;
+            return null;
         }
 
         mess.edit(`Pong! ${ping(date)}`);

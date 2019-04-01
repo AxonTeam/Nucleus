@@ -6,7 +6,7 @@ module.exports = bot => ({
     label: 'help',
     execute: async(msg, args) => {
         if (!args[0]) {
-            const fields = []
+            const fields = [];
             for (let command in bot.commands) {
                 command = bot.commands[command];
                 const field = { name: `${msg.prefix}${command.label}`, value: command.description };
@@ -16,7 +16,7 @@ module.exports = bot => ({
             const mess = await sendMessage(msg.channel, 'Check your DMs!');
             await sleep(5000);
             mess.delete();
-            msg.delete().catch(() => {
+            msg.delete().catch( () => {
                 // Ignore this error
             })
             const message = {
@@ -28,7 +28,7 @@ module.exports = bot => ({
             return sendMessage(msg.channel, `Command not found! Use \`${msg.prefix}help\` to see a list of commands!`);
         }
         const command = bot.commands[args[0].toLowerCase()];
-        let fields = [];
+        const fields = [];
         const mess = {
             title: `Help for ${msg.prefix}${command.label}`,
             description: `**Name:** ${command.label}`
@@ -43,7 +43,7 @@ module.exports = bot => ({
             mess.description += `\n**Limited to:** ${command.options.limitedto}`
         }
         if (command.options.flags.length > 0) {
-            let finale = { name: 'Flags', value: [] };
+            const finale = { name: 'Flags', value: [] };
             for (let flag of command.options.flags) {
                 const cur = `\`--${flag.flag}\` - ${flag.description}`;
                 finale.value.push(cur);
@@ -52,7 +52,7 @@ module.exports = bot => ({
             fields.push(finale);
         }
         if (command.options.subcommands.length > 0) {
-            let finale = { name: 'Subcommands', value: [] };
+            const finale = { name: 'Subcommands', value: [] };
             for (let subcmd of command.options.subcommands) {
                 const cur = `\`${msg.prefix}${command.label} ${subcmd.label}\` - ${subcmd.description}`;
                 finale.value.push(cur);
