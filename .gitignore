@@ -63,3 +63,7 @@ typings/
 # config
 
 config.json
+
+# Nucleus's token (Not that it really matters to much as it gets changed every thirty minutes)
+
+nucleusToken.json

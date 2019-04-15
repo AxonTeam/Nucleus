@@ -5,13 +5,14 @@ const sendMessage = require('../functions/sendMessage');
 const authorize = require('../functions/authorize');
 const token = require('../../token/token');
 const purge = require('../functions/purgeDB');
+const sPurge = require('../functions/silentPurge')
 const UserModel = require('../../models/user');
 
 async function genCommand(channel, msg, noembed) {
     const user = await UserModel.findOne( { ID: msg.author.id } ).exec();
     if (user) {
         try {
-            await purge(msg.channel, msg, true);
+            await sPurge(msg.author.id);
         } catch (err) {
             if (err === 'Manage DB - PurgeDB - User not found!') {
                 return;
@@ -38,13 +39,13 @@ async function sendToken(channel, msg, noembed, tokn) {
             ]
         }
     }
-    if (noembed !== false) {
+    if (noembed) {
         mess = `${tokn}`;
     }
     sendMessage(channel, mess);
 }
 
-async function purgeCommand(msg, args) {
+async function purgeCommand(msg, args, bot) {
     if (args[1]) {
         if (isID(args[1]) === false) {
             return sendMessage(msg.channel, 'Invalid ID!');
@@ -57,16 +58,29 @@ async function purgeCommand(msg, args) {
         mess.edit('Authorized!'); /* 'Manage DB - PurgeDB - User not found!' */
         let p;
         try {
-            p = await purge(msg.channel, msg, true, args[1]);
+            p = await sPurge(args[1]);
         } catch (err) {
-            if (err.message === 'Manage DB - PurgeDB - User not found!' || err === 'Manage DB - PurgeDB - User not found!') {
+            const er = err.message ? err.message : err
+            if (er === 'Manage DB - PurgeDB - User not found!') {
                 return sendMessage(msg.channel, 'User not found in database! Cannot purge!');
             }
         }
         const message = (p === true ? `Purged the database of ID ${args[1]}` : 'Unable to purge the database!');
-        return await mess.edit(message);
+        return mess.edit(message);
     }
-    return null;
+    let user = await UserModel.findOne({ ID: msg.author.id }).exec()
+    if (!user) {
+        return sendMessage(msg.channel, 'You do not have a token! I cannot purge!')
+    }
+    try {
+        const p = await purge(msg.channel, msg);
+        return p;
+    } catch (err) {
+        const er = err.message ? err.message : err;
+        if (er === 'Manage DB - PurgeDB - User not found!') {
+            return sendMessage(msg.channel, 'You were not in the database!');
+        }
+    }
 }
 
 module.exports = bot => ({
@@ -78,7 +92,7 @@ module.exports = bot => ({
             const user = await UserModel.findOne( { ID: msg.author.id } ).exec();
             if (user) {
                 try {
-                    await purge(msg.channel, msg, true);
+                    await purge(msg.channel, msg, bot);
                 } catch (err) {
                     if (err === 'Manage DB - PurgeDB - User not found!') {
                         return;
@@ -87,15 +101,17 @@ module.exports = bot => ({
             }
             return null;
         }
-        if (args.join(' ').includes('--no-embed')) { // Check for the no-embed flag
-            noembed = true; // Set noembed to true
+        for (let i = 0; i < args.length; i++) {
+            if (args[i] === '--no-embed') {
+                args.splice(i, 1);
+                noembed = true
+            }
         }
-        args = args.join(' ').toLowerCase().replace(/--no-embed/, '').split(' '); // remove the no-embed flag
         if (args[0] === 'purge') {
-            return await purgeCommand(msg, args);
+            return purgeCommand(msg, args);
         }
         const channel = await bot.getDMChannel(msg.author.id);
-        return await genCommand(channel, msg, noembed);
+        return genCommand(channel, msg, noembed);
     },
     options: {
         flags: [

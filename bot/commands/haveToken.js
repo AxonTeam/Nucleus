@@ -4,7 +4,7 @@ const hasRoot = require('../functions/hasRootChecker');
 const isID = require('../functions/isValidID');
 const auth = require('../functions/authorize');
 const sendMessage = require('../functions/sendMessage');
-const purge = require('../functions/purgeDB');
+const purge = require('../functions/silentPurge');
 /* --- DATABASE/MODELS --- */
 
 const UserModel = require('../../models/user');
@@ -41,7 +41,7 @@ module.exports = () => ({
             return sendMessage(msg.channel, 'You do not have a token, but you can get one!');
         }
         if (!authBol) {
-            await purge(msg.channel, msg, true, msg.author.id);
+            await purge(msg.author.id);
             return sendMessage(msg.channel, 'You do not have a token!');
         }
         return sendMessage(msg.channel, 'You have a token!');

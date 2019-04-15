@@ -2,7 +2,12 @@ const mongoose = require('mongoose')
 const fs = require('fs');
 
 const bot = require('./bot/bot');
-const config = require('./config.json');
+const config = require('./config');
+const genNucleusToken = require('./bot/functions/genNucleusToken');
+
+if (!fs.existsSync('./nucleusToken.json') ) {
+    fs.writeFileSync('./nucleusToken.json', JSON.stringify( { token: 'Fake token' } ) );
+}
 
 mongoose.connect('mongodb://localhost/AxonTeam', {
     useCreateIndex: true,
@@ -13,7 +18,10 @@ mongoose.connect('mongodb://localhost/AxonTeam', {
 const db = mongoose.connection;
 
 db.once('connect', () => console.log('Connected to AxonTeam database!') );
-db.on('error', () => console.error.bind(console, 'Connection error:') );
+db.on('error', () => {
+    console.error.bind(console, 'Connection error:');
+    process.exit();
+} );
 
 function initCommand(command) {
     if (bot.commands[command.label]) {
@@ -45,12 +53,24 @@ initCommands();
 const prefix = config.prefix || 'nuke ';
 const status = config.status || 'AxonTeam Manager';
 
-bot.on('ready', () => {
+bot.on('ready', async() => {
     console.log('READY');
     bot.editStatus('online', {
         name: `${prefix}help | ${status}`,
     });
     console.log('SET - STATUS');
+    const tkn = await genNucleusToken();
+    if (tkn !== true) {
+        console.log('Error generating Nucleus token! Exiting process...');
+        process.exit();
+    }
 } );
 
 bot.connect();
+
+setInterval(async() => {
+    const token = await genNucleusToken();
+    if (token !== true) {
+        console.log('Error regenerating Nucleus\'s token!');
+    }
+}, 1800000);

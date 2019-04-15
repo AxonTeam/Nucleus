@@ -19,6 +19,11 @@ async function generator(userID) {
             .replace(/\//g, '_')
             .replace(/=/g, '');
         uID = 'root';
+    } else if (userID === 'Nucleus') {
+        userID = Crypto.randomBytes(128).toString('base64').replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=/g, '');
+        uID = 'Nucleus';
     }
     const token = tokenize(userID);
     const endToken = await hashToken(token);

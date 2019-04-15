@@ -24,7 +24,8 @@ async function botAuthorize(msg, id, sendMess) {
     if (!sendMess) {
         sendMess = false;
     }
-    let [mess, message];
+    let mess;
+    let message;
     if (sendMess !== false) {
         mess = await sendMessage(msg.channel, 'Authorizing...');
         if (!mess) {
