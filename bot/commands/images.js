@@ -17,13 +17,11 @@ if (port !== 80) {
 async function uploadImage(userID, link, type, id) {
     delete require.cache[require.resolve('../../nucleusToken.json')];
     nucleusToken = require('../../nucleusToken.json').token;
-    const data = { buffer: link, type: link };
-    if (type && type !== 'image') {
-        data.type = type;
-    }
+    const data = { buffer: link, type: type.image || 'image', extension: type.ext || 'png' };
     if (id) {
         data.name = id;
     }
+    console.log(data)
     let result;
     try {
         result = await request.post(`${baseURL}/api/images/`)
@@ -77,22 +75,33 @@ async function deleteImage(userID, imageID, imageType) {
     return result;
 }
 
+function checkArgs(args) {
+    if (!args || !args[0] || !args[1]) {
+        return true;
+    }
+}
+
+function checkAttach(msg) {
+    if (!msg.attachments || msg.attachments.length === 0) {
+        return true;
+    }
+}
 module.exports = bot => ({
     label: 'images',
     execute: async(msg, args) => {
-        if (!args || !args[0] || !args[1]) {
+        if (checkArgs(args) && checkAttach(msg)) {
             return sendMessage(msg.channel, {
                 embed: {
                     title: 'Invalid Usage',
-                    description: 'See usable subcommands below',
+                    description: 'See usable subcommands below\n*Psst. You can upload 1 image (in your message) instead of using the link*',
                     fields: [
                         {
                             name: 'upload',
-                            value: '**Description:** Upload a image to the CDN\n**Usage:** `images upload (link) (image name) (image type)`'
+                            value: '**Description:** Upload a image to the CDN\n**Usage:** `images upload (link) (image name) (image type) (image extension)`'
                         },
                         {
                             name: 'delete',
-                            value: '**Description:** Delete a image you uploaded from the CDN\n**Usage:** `images delete (id of the image)`'
+                            value: '**Description:** Delete a image you uploaded from the CDN\n**Usage:** `images delete (image id) (type)`'
                         }
                     ]
                 }
@@ -110,11 +119,19 @@ module.exports = bot => ({
             return sendMessage(msg.channel, 'No. Please generate a token');
         }
         if (args[0] === 'upload') {
-            const image = await uploadImage(msg.author.id, args[1], args[3], args[2]);
+            let link = args[1];
+            let type = { image: args[3], ext: args[4] };
+            let name = args[2]
+            if (msg.attachments && msg.attachments.length > 0) {
+                link = msg.attachments[0].url;
+                type = { image: args[2], ext: args[3] };
+                name = args[1]
+            }
+            const image = await uploadImage(msg.author.id, link, type, name);
             return sendMessage(msg.channel, image);
         }
         if (args[0] === 'delete') {
-            const data = await deleteImage(msg.author.id, args[1], args[2]);
+            const data = await deleteImage(msg.author.id, args[1], args[2] );
             return sendMessage(msg.channel, data);
         }
     },

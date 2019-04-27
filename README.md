@@ -11,6 +11,7 @@ SUBCOMMAND FORMAT: ` ===> subcommand - Description`
 - haveToken - Checks if you have a token. Root can check if others have a token.
 - eval - Standard JS eval command. Restricted to bot owners.
 - help - Standard dm help command.
+- exec - Execute a command. Restricted to bot owners
 
 # Setup/Config (config.json)
 
@@ -21,3 +22,4 @@ FORMAT: `value [JSON/JS Type] - Description. Defaults`
 - prefix [String] - The prefix for the bot. Default: Nuke
 - status [String] - Custom status for the bot. Default: AxonTeam Manager
 - token [String] - This is the bot token to sign in with
+- url [String] - URL to request images/screenshots be uploaded to. Default: cdn.axonteam.org

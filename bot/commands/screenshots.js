@@ -14,10 +14,10 @@ if (port !== 80) {
 
 // Upload a screenshot
 
-async function uploadSS(userID, link) {
+async function uploadS(userID, link, ext) {
     delete require.cache[require.resolve('../../nucleusToken.json')];
     nucleusToken = require('../../nucleusToken.json').token;
-    const data = { buffer: link };
+    const data = { buffer: link, extension: ext || 'png' };
     let result;
     try {
         result = await request.post(`${baseURL}/api/screenshots/`)
@@ -43,7 +43,7 @@ async function uploadSS(userID, link) {
 
 // Delete a image
 
-async function deleteSS(userID, imageID) {
+async function deleteS(userID, imageID) {
     delete require.cache[require.resolve('../../nucleusToken.json')];
     nucleusToken = require('../../nucleusToken.json').token;
     let result;
@@ -69,18 +69,30 @@ async function deleteSS(userID, imageID) {
     return result;
 }
 
+function checkArgs(args) {
+    if (!args || !args[0] || !args[1]) {
+        return true;
+    }
+}
+
+function checkAttach(msg) {
+    if (!msg.attachments || msg.attachments.length === 0) {
+        return true;
+    }
+}
+
 module.exports = bot => ({
     label: 'screenshots',
     execute: async(msg, args) => {
-        if (!args || !args[0] || !args[1]) {
+        if (checkArgs(args) && checkAttach(msg)) {
             return sendMessage(msg.channel, {
                 embed: {
                     title: 'Invalid Usage',
-                    description: 'See usable subcommands below',
+                    description: 'See usable subcommands below\n*Psst. You can upload 1 (in you message) image instead of using the link*',
                     fields: [
                         {
                             name: 'upload',
-                            value: '**Description:** Upload a screenshot to the CDN\n**Usage:** `screenshots upload (link)`'
+                            value: '**Description:** Upload a screenshot to the CDN\n**Usage:** `screenshots upload (link) (image extension)`'
                         },
                         {
                             name: 'delete',
@@ -99,11 +111,17 @@ module.exports = bot => ({
             return sendMessage(msg.channel, 'No. Please generate a token.');
         }
         if (args[0] === 'upload') {
-            const image = await uploadSS(msg.author.id, args[1]);
+            let link = args[1];
+            let ext = args[2]
+            if (msg.attachments && msg.attachments.length > 0) {
+                link = msg.attachments[0].url;
+                ext = args[1]
+            }
+            const image = await uploadS(msg.author.id, link, ext);
             return sendMessage(msg.channel, image);
         }
         if (args[0] === 'delete') {
-            const data = await deleteSS(msg.author.id, args[1]);
+            const data = await deleteS(msg.author.id, args[1]);
             return sendMessage(msg.channel, data);
         }
     },
